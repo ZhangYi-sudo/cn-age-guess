@@ -1,0 +1,2519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>我知道你几岁｜中国时代记忆猜年龄</title>
+    <meta name="description" content="回答几道关于童年游戏、电视动画、校园生活、零食金曲和网络热梗的问题，算法实时缩小范围，只在最后一次直接断言你的真实年龄。">
+    <meta name="theme-color" content="#EEE7DA">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23dc2626%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2232%22%20dy%3D%220.35em%22%20text-anchor%3D%22middle%22%20font-family%3D%22ui-sans-serif%2C%20system-ui%2C%20-apple-system%2C%20sans-serif%22%20font-size%3D%2232%22%20font-weight%3D%22600%22%20fill%3D%22%23ffffff%22%3E%E7%8C%9C%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <style>
+        :root {
+            --ink: #221D19;
+            --ink-soft: #625A52;
+            --ink-mid: #3B342E;
+            --bg: #EEE7DA;
+            --bg-deep: #E3D9C8;
+            --pop: #FFD23F;
+            --pop-hover: #FFC800;
+            --pop-tint: #FFF3C4;
+            --marker: #FFE45C;
+            --stamp: #C8423A;
+            --ok: #2E8A57;
+            --tape: rgba(238, 224, 186, 0.9);
+            --night: #1E222C;
+            --night-ink: #F4EFE6;
+            /* 时代地层色 */
+            --l1970: #C9A27E;
+            --l1980: #E58A6B;
+            --l1990: #F2C14E;
+            --l2000: #8CC49B;
+            --l2010: #6FA8DC;
+            --l2020: #A68BD9;
+            --cut: 13px 17px 14px 18px / 17px 13px 18px 14px;
+            --cut-sm: 9px 12px 10px 13px / 12px 9px 13px 10px;
+            --lift: 0 1px 0 rgba(34, 29, 25, 0.05), 0 10px 22px -12px rgba(60, 40, 20, 0.45);
+            --body-font: 'PingFang SC', 'HarmonyOS Sans SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+            --display: 'PingFang SC', 'HarmonyOS Sans SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+            --svg-marker: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M5 8C45 3 125 6 193 3c4 0 6 4 5 10l-1 17c-1 5-7 7-37 6-50-2-110 2-152 1-5 0-7-4-6-10l1-13c0-3 1-5 2-6z' fill='%23FFE45C'/%3E%3C/svg%3E");
+            --svg-dash: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='6' viewBox='0 0 44 6'%3E%3Cpath d='M2 3.4Q8 2.3 15 3.3M24 3.1Q31 4 38 2.9' fill='none' stroke='%23BDB0A0' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: var(--body-font);
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--ink);
+            background: var(--bg);
+            transition: background-color 0.6s ease;
+        }
+
+        body.is-night {
+            background: var(--night);
+        }
+
+        button {
+            font: inherit;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        h1, h2, h3, p, ol, ul {
+            margin: 0;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        :focus-visible {
+            outline: 3px solid #7A4E2E;
+            outline-offset: 3px;
+        }
+
+        /* 顶部固定栏 */
+        .top-bar {
+            position: fixed;
+            z-index: 10;
+            top: max(10px, env(safe-area-inset-top));
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(600px, calc(100% - 20px));
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px 7px 14px;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 18px;
+            box-shadow: var(--lift);
+            color: var(--ink);
+        }
+
+        .top-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 8px;
+            border-radius: 8px;
+            background: var(--pop);
+            border: 1.5px solid var(--ink);
+            font-size: 12px;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        .top-title {
+            flex: 1;
+            min-width: 0;
+            font-family: var(--display);
+            font-weight: 400;
+            font-size: 20px;
+            letter-spacing: 0.04em;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .top-icon {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border: 2px solid var(--ink);
+            border-radius: 12px;
+            background: #FFFFFF;
+            color: var(--ink);
+            font-size: 16px;
+            font-weight: 900;
+            line-height: 1;
+            transition: background 0.12s ease;
+        }
+
+        .top-icon:hover {
+            background: #F7F2EA;
+        }
+
+        html.has-modal .top-icon {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .display-font,
+        .sheet-title,
+        .hero-title,
+        .q-num,
+        .rv-age,
+        .res-age,
+        .stamp-t,
+        .res-h,
+        .st-era {
+            font-family: var(--display);
+            font-weight: 400;
+            font-synthesis: none;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: calc(var(--bar-bottom, 68px) + 14px) 16px max(32px, env(safe-area-inset-bottom));
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 50px;
+            margin: 0;
+            padding: 8px 22px;
+            border: 2px solid var(--ink);
+            border-radius: var(--cut-sm);
+            background: #FFFFFF;
+            color: var(--ink);
+            font-size: 16px;
+            font-weight: 900;
+            line-height: 1.3;
+            text-align: center;
+            text-decoration: none;
+            transition: transform 0.08s ease, background 0.12s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #F7F2EA;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.55;
+            cursor: default;
+        }
+
+        .btn-go {
+            background: var(--pop);
+            font-size: 18px;
+            min-height: 56px;
+        }
+
+        .btn-go:hover:not(:disabled) {
+            background: var(--pop-hover);
+        }
+
+        .btn-wide {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .link-btn {
+            margin: 0;
+            padding: 8px 4px;
+            border: 0;
+            background: none;
+            color: #7A4E2E;
+            font-size: 15px;
+            font-weight: 900;
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 4px;
+        }
+
+        /* 纸片卡片与胶带 */
+        .paper {
+            position: relative;
+            background: #FFFFFF;
+            border-radius: var(--cut);
+            box-shadow: var(--lift);
+        }
+
+        .taped::before {
+            content: '';
+            position: absolute;
+            top: -11px;
+            left: 50%;
+            width: 92px;
+            height: 24px;
+            margin-left: -46px;
+            background: var(--tape);
+            transform: rotate(-2.5deg);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+            pointer-events: none;
+        }
+
+        .mark {
+            padding: 0 0.16em;
+            background: var(--svg-marker) center 78% / 100% 52% no-repeat;
+            -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+        }
+
+        /* ==========================================================
+           首页
+           ========================================================== */
+        .title-view {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: calc(100vh - var(--bar-bottom, 68px) - 48px);
+            min-height: calc(100svh - var(--bar-bottom, 68px) - 48px);
+            text-align: center;
+        }
+
+        .hero-art {
+            display: block;
+            width: min(100%, 340px);
+            height: auto;
+            margin: 0 auto 4px;
+        }
+
+        .hero-art .lens {
+            transform-origin: 196px 120px;
+            animation: lens 4.8s ease-in-out infinite;
+        }
+
+        @keyframes lens {
+            0%, 100% { transform: translate(0, 0); }
+            30% { transform: translate(-46px, 30px); }
+            62% { transform: translate(40px, -22px); }
+        }
+
+        .hero-title {
+            margin: 6px 0 0;
+            font-size: clamp(44px, 13vw, 64px);
+            line-height: 1.18;
+            letter-spacing: 0.06em;
+        }
+
+        .hero-sub {
+            margin-top: 8px;
+            font-size: 17px;
+            font-weight: 900;
+            color: var(--ink);
+        }
+
+        .hero-facts {
+            margin: 18px 0 16px;
+            font-size: 15px;
+            font-weight: 900;
+            color: var(--ink-mid);
+            letter-spacing: 0.03em;
+        }
+
+        .hero-note {
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--ink-soft);
+        }
+
+        .count-line {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px 16px;
+            margin-top: 20px;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--ink-mid);
+        }
+
+        .fine {
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+
+        /* ==========================================================
+           答题页
+           ========================================================== */
+        .q-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .q-num {
+            flex: 0 0 auto;
+            font-size: 28px;
+            line-height: 1;
+            letter-spacing: 0.02em;
+        }
+
+        .q-num span {
+            font-size: 17px;
+            margin-right: 2px;
+        }
+
+        .meter {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            --p: 0%;
+        }
+
+        .meter-label {
+            flex: 0 0 auto;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--ink-mid);
+        }
+
+        .meter-bar {
+            position: relative;
+            flex: 1;
+            height: 14px;
+            overflow: hidden;
+            border: 2px solid var(--ink);
+            border-radius: 8px 10px 9px 11px / 10px 8px 11px 9px;
+            background: linear-gradient(90deg, var(--l2010), var(--l2000) 35%, var(--l1990) 65%, var(--l1980));
+        }
+
+        .meter-bar i {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: calc(100% - var(--p));
+            background: #F7F2EA;
+            transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .meter-pct {
+            flex: 0 0 auto;
+            min-width: 3em;
+            font-family: var(--display);
+            font-weight: 400;
+            font-size: 19px;
+            text-align: right;
+        }
+
+        .meter.is-hot .meter-pct {
+            color: var(--stamp);
+        }
+
+        .q-body {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .q-card {
+            padding: 24px 20px 22px;
+            text-align: center;
+            transition: opacity 0.16s ease, transform 0.16s ease;
+        }
+
+        .q-card.is-out,
+        .answers.is-out {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        .answers {
+            display: grid;
+            gap: 10px;
+            transition: opacity 0.16s ease, transform 0.16s ease;
+        }
+
+        .q-kind {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--ink-mid);
+        }
+
+        .q-icon {
+            display: inline-grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--kc, var(--l1990));
+            color: var(--ink);
+        }
+
+        .q-icon svg {
+            width: 21px;
+            height: 21px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .q-card[data-kind="play"] { --kc: var(--l2010); }
+        .q-card[data-kind="watch"] { --kc: var(--l1980); }
+        .q-card[data-kind="hear"] { --kc: var(--l2020); }
+        .q-card[data-kind="eat"] { --kc: var(--l1990); }
+        .q-card[data-kind="drink"] { --kc: var(--l1990); }
+        .q-card[data-kind="use"] { --kc: var(--l2000); }
+        .q-card[data-kind="say"] { --kc: var(--l1980); }
+        .q-card[data-kind="wear"] { --kc: var(--l2020); }
+        .q-card[data-kind="do"] { --kc: var(--l2000); }
+        .q-card[data-kind="read"] { --kc: var(--l1990); }
+        .q-card[data-kind="sport"] { --kc: var(--l2000); }
+        .q-card[data-kind="movie"] { --kc: var(--l2010); }
+        .q-card[data-kind="quiz"] { --kc: var(--pop); }
+        .q-card[data-kind="pick"] { --kc: var(--l1970); }
+
+        .q-name {
+            font-size: clamp(24px, 7.2vw, 33px);
+            font-weight: 900;
+            line-height: 1.38;
+            overflow-wrap: anywhere;
+        }
+
+        .q-name.is-long {
+            font-size: clamp(19px, 5.2vw, 24px);
+        }
+
+        .q-desc {
+            margin-top: 8px;
+            font-size: 15px;
+            color: var(--ink-soft);
+            line-height: 1.55;
+        }
+
+        .q-ask {
+            display: inline-block;
+            margin-top: 14px;
+            font-size: 19px;
+            font-weight: 900;
+        }
+
+        .q-ask span {
+            padding: 0 0.14em;
+            background: var(--svg-marker) center 80% / 100% 50% no-repeat;
+        }
+
+        .ans {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            min-height: 54px;
+            margin: 0;
+            padding: 10px 16px;
+            border: 2px solid var(--ink);
+            border-radius: var(--cut-sm);
+            background: #FFFFFF;
+            font-size: 16px;
+            font-weight: 900;
+            line-height: 1.4;
+            text-align: left;
+            transition: transform 0.08s ease, background 0.12s ease, opacity 0.2s ease;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .answers.is-moved .ans:hover:not(:disabled) {
+                background: #F7F2EA;
+            }
+        }
+
+        .ans:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .ans:disabled {
+            cursor: default;
+        }
+
+        .ans.is-picked {
+            background: var(--pop);
+        }
+
+        .answers.is-locked .ans:not(.is-picked) {
+            opacity: 0.45;
+        }
+
+        .q-hint {
+            margin: 6px 0 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink-soft);
+            text-align: center;
+        }
+
+        .ans-t {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ans-key {
+            flex: 0 0 auto;
+            display: none;
+            width: 22px;
+            font-size: 13px;
+            color: var(--ink-soft);
+            text-align: right;
+        }
+
+        .ans-lv {
+            flex: 0 0 auto;
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .ans-lv i {
+            display: block;
+            width: 10px;
+            height: 10px;
+            border: 2px solid var(--ink);
+            border-radius: 50%;
+        }
+
+        .ans-lv[data-lv="3"] i,
+        .ans-lv[data-lv="2"] i:nth-child(-n+2),
+        .ans-lv[data-lv="1"] i:first-child {
+            background: var(--ink);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .ans-key {
+                display: block;
+            }
+        }
+
+        /* ==========================================================
+           揭晓页（黑夜定音）
+           ========================================================== */
+        .reveal-view {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - var(--bar-bottom, 68px) - 48px);
+            min-height: calc(100svh - var(--bar-bottom, 68px) - 48px);
+            overflow-x: clip;
+            color: var(--night-ink);
+            text-align: center;
+            cursor: default;
+        }
+
+        .reveal-view.is-shake {
+            animation: shake 0.42s cubic-bezier(0.3, 0.7, 0.4, 1);
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0, 0); }
+            15% { transform: translate(-7px, 4px); }
+            30% { transform: translate(6px, -5px); }
+            45% { transform: translate(-4px, 3px); }
+            60% { transform: translate(3px, -2px); }
+            80% { transform: translate(-1px, 1px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        .rv {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .rv-dots {
+            display: flex;
+            gap: 10px;
+            height: 40px;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .rv-dots i {
+            display: block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--night-ink);
+            animation: dot 0.9s ease-in-out infinite;
+        }
+
+        .rv-dots i:nth-child(2) { animation-delay: 0.15s; }
+        .rv-dots i:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes dot {
+            0%, 100% { opacity: 0.25; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-5px); }
+        }
+
+        .rv.s1 .rv-dots {
+            opacity: 0;
+        }
+
+        .rv-line {
+            font-size: 20px;
+            font-weight: 900;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .rv-ok {
+            margin-top: -26px;
+            color: #CFC7BB;
+        }
+
+        .rv-you {
+            margin-top: 18px;
+            font-size: 26px;
+        }
+
+        .rv.s1 .rv-ok,
+        .rv.s2 .rv-you {
+            opacity: 1;
+            transform: none;
+        }
+
+        .rv-age {
+            position: relative;
+            margin-top: 8px;
+            font-size: clamp(64px, 19vw, 98px);
+            line-height: 1.12;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            opacity: 0;
+        }
+
+        .rv.s3 .rv-age {
+            animation: slam 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.15) forwards;
+        }
+
+        @keyframes slam {
+            0% { opacity: 0; transform: scale(2.6); filter: blur(4px); }
+            60% { opacity: 1; transform: scale(0.94); filter: none; }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .rv-age::after {
+            content: '';
+            position: absolute;
+            left: 4%;
+            right: 4%;
+            bottom: -4px;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--stamp);
+            transform: scaleX(0);
+            transform-origin: left center;
+        }
+
+        .rv.s3 .rv-age::after {
+            transition: transform 0.35s ease 0.35s;
+            transform: scaleX(1);
+        }
+
+        .rv-check,
+        .rv-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            margin-top: 34px;
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .rv.s4 .rv-check,
+        .rv.s4 .rv-input {
+            visibility: visible;
+            opacity: 1;
+            transform: none;
+            pointer-events: auto;
+        }
+
+        .rv-q {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .rv-note {
+            margin-top: -4px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #B8B0A4;
+        }
+
+        .rv-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .rv .btn {
+            border-color: var(--night-ink);
+        }
+
+        .rv .btn:not(.btn-go) {
+            background: transparent;
+            color: var(--night-ink);
+        }
+
+        .rv .btn:not(.btn-go):hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .age-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .age-step {
+            width: 54px;
+            min-height: 54px;
+            padding: 0;
+            font-size: 24px;
+        }
+
+        .age-input {
+            width: 124px;
+            height: 64px;
+            padding: 0 8px;
+            border: 2px solid var(--night-ink);
+            border-radius: var(--cut-sm);
+            background: #FFFFFF;
+            color: var(--ink);
+            font-family: var(--display);
+            font-size: 38px;
+            text-align: center;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .age-input::-webkit-outer-spin-button,
+        .age-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .age-row.is-bad .age-input {
+            border-color: #FF8A80;
+            animation: shake 0.3s ease;
+        }
+
+        .rv-input .btn-go {
+            min-width: 200px;
+        }
+
+        .rv-input .link-btn {
+            color: #CFC7BB;
+        }
+
+        .rv-skip {
+            margin-top: 26px;
+            font-size: 13px;
+            color: #8F877C;
+            transition: opacity 0.3s ease;
+        }
+
+        .rv.s3 .rv-skip {
+            opacity: 0;
+        }
+
+        /* ==========================================================
+           结果报告页
+           ========================================================== */
+        .sheet {
+            margin-top: 12px;
+            padding: 30px 20px 24px;
+            text-align: center;
+        }
+
+        .res-head {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--ink-soft);
+            letter-spacing: 0.08em;
+        }
+
+        .res-you {
+            margin-top: 10px;
+            font-size: 19px;
+            font-weight: 900;
+        }
+
+        .res-age {
+            font-size: clamp(54px, 16vw, 78px);
+            line-height: 1.12;
+            letter-spacing: 0.04em;
+        }
+
+        .stamp {
+            position: relative;
+            display: inline-block;
+            margin: 14px auto 4px;
+            padding: 8px 24px 6px;
+            color: var(--stamp);
+        }
+
+        .stamp::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 4px solid currentColor;
+            border-radius: 12px 16px 13px 17px / 16px 12px 17px 13px;
+            transform: rotate(-4deg);
+            opacity: 0.9;
+        }
+
+        .stamp-t {
+            position: relative;
+            font-size: 36px;
+            line-height: 1.2;
+        }
+
+        .stamp.is-pop {
+            animation: pop 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .res-real {
+            margin-top: 8px;
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .res-n {
+            margin-top: 4px;
+            font-size: 14px;
+            color: var(--ink-soft);
+        }
+
+        .res-sec {
+            margin-top: 24px;
+            padding-top: 20px;
+            background: var(--svg-dash) top center / 44px 6px repeat-x;
+            text-align: left;
+        }
+
+        .res-h {
+            font-size: 22px;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        /* 记忆地层 */
+        .strata {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            overflow: hidden;
+            border-radius: 12px 16px 13px 17px / 16px 12px 17px 13px;
+        }
+
+        .st-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 6px 10px;
+            background: color-mix(in srgb, var(--c) 24%, #FFFFFF);
+        }
+
+        .st-fill {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: var(--v, 0%);
+            background: var(--c);
+            border-radius: 0 14px 14px 0;
+            transform-origin: left center;
+        }
+
+        .strata.is-grow .st-fill {
+            animation: grow 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        }
+
+        .strata.is-grow .st-row:nth-child(2) .st-fill { animation-delay: 0.06s; }
+        .strata.is-grow .st-row:nth-child(3) .st-fill { animation-delay: 0.12s; }
+        .strata.is-grow .st-row:nth-child(4) .st-fill { animation-delay: 0.18s; }
+        .strata.is-grow .st-row:nth-child(5) .st-fill { animation-delay: 0.24s; }
+        .strata.is-grow .st-row:nth-child(6) .st-fill { animation-delay: 0.3s; }
+
+        @keyframes grow {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        .st-row.is-empty {
+            background:
+                repeating-linear-gradient(-45deg, rgba(34, 29, 25, 0.06) 0 6px, transparent 6px 12px),
+                color-mix(in srgb, var(--c) 14%, #FFFFFF);
+        }
+
+        .st-era {
+            position: relative;
+            flex: 0 0 auto;
+            min-width: 5.8em;
+            font-size: 16px;
+        }
+
+        .st-names {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            overflow: hidden;
+        }
+
+        .st-fossil {
+            flex: 0 1 auto;
+            min-width: 0;
+            max-width: 62%;
+            overflow: hidden;
+            padding: 2px 8px;
+            border-radius: 6px 8px 7px 9px / 8px 6px 9px 7px;
+            background: rgba(255, 255, 255, 0.86);
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .st-fossil:only-child {
+            max-width: 100%;
+        }
+
+        .st-none {
+            position: relative;
+            flex: 1;
+            font-size: 13px;
+            color: var(--ink-soft);
+            text-align: right;
+        }
+
+        .strata-peak {
+            margin-top: 10px;
+            font-size: 15px;
+            font-weight: 900;
+        }
+
+        .res-key {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 4px 8px;
+            font-size: 17px;
+            font-weight: 900;
+        }
+
+        .res-key .key-a {
+            padding: 0 0.14em;
+            background: var(--svg-marker) center 80% / 100% 50% no-repeat;
+        }
+
+        .res-key-note {
+            margin-top: 4px;
+            font-size: 14px;
+            color: var(--ink-soft);
+        }
+
+        .res-foot {
+            margin-top: 20px;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--ink-mid);
+        }
+
+        .res-count {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px 14px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .actions .btn {
+            flex: 1 1 160px;
+            max-width: 280px;
+        }
+
+        .log {
+            margin-top: 18px;
+            padding: 4px 16px;
+        }
+
+        .log summary {
+            padding: 12px 0;
+            font-size: 15px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .log-list {
+            padding: 0 0 12px;
+            list-style: none;
+        }
+
+        .log-list li {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0 10px;
+            padding: 8px 0;
+            background: var(--svg-dash) bottom left / 44px 6px repeat-x;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .log-list li:last-child {
+            background: none;
+        }
+
+        .log-n {
+            grid-row: span 2;
+            font-family: var(--display);
+            font-weight: 400;
+            font-size: 16px;
+            color: var(--ink-soft);
+        }
+
+        .log-a {
+            color: var(--ink-soft);
+        }
+
+        .log-a::before {
+            content: '答：';
+            font-weight: 900;
+        }
+
+        /* ==========================================================
+           弹窗（玩法说明 & 分享卡片）
+           ========================================================== */
+        .modal {
+            position: fixed;
+            inset: 0;
+            top: calc(var(--bar-bottom, 68px) + 6px);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px 16px;
+            padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+            background: rgba(34, 29, 25, 0.45);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-sheet {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            max-height: 100%;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding: 22px 20px 20px;
+            background: #FFFFFF;
+            border-radius: 18px 22px 19px 23px / 22px 18px 23px 19px;
+            box-shadow: 0 24px 60px -18px rgba(60, 40, 20, 0.6);
+            color: var(--ink);
+            text-align: center;
+            animation: modal-pop 0.22s ease;
+        }
+
+        .modal-sheet:focus {
+            outline: none;
+        }
+
+        @keyframes modal-pop {
+            from { transform: scale(0.94); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .sheet-title {
+            margin: 0 36px 12px;
+            font-size: 24px;
+            line-height: 1.3;
+        }
+
+        .modal-x {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--ink-soft);
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .modal-x:hover {
+            background: rgba(127, 127, 127, 0.14);
+            color: var(--ink);
+        }
+
+        .help-list {
+            margin: 10px 0 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: help;
+            text-align: left;
+        }
+
+        .help-list li {
+            position: relative;
+            margin: 0 0 10px;
+            padding-left: 30px;
+            font-size: 15px;
+            line-height: 1.6;
+            counter-increment: help;
+        }
+
+        .help-list li::before {
+            content: counter(help);
+            position: absolute;
+            left: 0;
+            top: 2px;
+            display: grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--pop);
+            font-family: var(--display);
+            font-size: 14px;
+        }
+
+        .help-note {
+            margin: 8px 0 14px;
+            font-size: 13px;
+            color: var(--ink-soft);
+            text-align: left;
+        }
+
+        .help-sheet .btn {
+            width: 100%;
+        }
+
+        .sh-sheet {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            max-width: 460px;
+        }
+
+        .sh-img {
+            position: relative;
+            display: grid;
+            place-items: center;
+            width: 100%;
+            min-height: 160px;
+            padding: 8px;
+            border: 2px solid var(--ink);
+            border-radius: 16px;
+            background: var(--bg);
+        }
+
+        .sh-img img {
+            display: block;
+            max-width: 100%;
+            max-height: min(46vh, 420px);
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(60, 40, 20, 0.25);
+            -webkit-touch-callout: default;
+        }
+
+        .sh-wait {
+            font-size: 14px;
+            color: var(--ink-soft);
+        }
+
+        .sh-sheet .btn-go {
+            width: 100%;
+        }
+
+        .sh-note {
+            min-height: 1.5em;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.5;
+            color: var(--ink-soft);
+            text-align: center;
+        }
+
+        .sh-note.is-ok {
+            color: var(--ok);
+        }
+
+        .row2 {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+
+        .row2.one {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .row2 .btn {
+            min-height: 46px;
+            padding: 6px 10px;
+            font-size: 15px;
+        }
+
+        /* 横屏手机适配 */
+        @media (orientation: landscape) and (max-height: 560px) {
+            main {
+                max-width: 860px;
+                padding-top: calc(var(--bar-bottom, 56px) + 8px);
+            }
+
+            .title-view {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                align-items: center;
+                gap: 24px;
+            }
+
+            .hero-art {
+                width: min(100%, 260px);
+            }
+
+            .hero-title {
+                font-size: clamp(34px, 6vw, 48px);
+            }
+
+            .hero-facts {
+                margin: 0 0 12px;
+            }
+
+            .q-head {
+                margin-bottom: 10px;
+            }
+
+            .q-body {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                align-items: center;
+                gap: 16px;
+            }
+
+            .q-card {
+                padding: 18px 16px 16px;
+            }
+
+            .q-name {
+                font-size: clamp(22px, 3.6vw, 30px);
+            }
+
+            .q-desc {
+                font-size: 14px;
+            }
+
+            .q-ask {
+                margin-top: 10px;
+            }
+
+            .answers {
+                gap: 7px;
+            }
+
+            .ans {
+                min-height: 44px;
+                padding: 6px 14px;
+                font-size: 15px;
+            }
+
+            .rv-age {
+                font-size: clamp(46px, 9vw, 72px);
+            }
+
+            .rv-check,
+            .rv-input {
+                margin-top: 18px;
+            }
+
+            .result-view {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (min-width: 900px) and (min-height: 700px) {
+            .q-card {
+                padding: 28px 28px 24px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hero-art .lens,
+            .rv-dots i,
+            .strata.is-grow .st-fill,
+            .stamp.is-pop,
+            .reveal-view.is-shake {
+                animation: none;
+            }
+
+            .rv.s3 .rv-age {
+                animation: none;
+                opacity: 1;
+            }
+
+            .q-card,
+            .answers,
+            .meter-bar i {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="top-bar" id="gameBar">
+        <span class="top-badge">中国记忆</span>
+        <h1 class="top-title">我知道你几岁</h1>
+        <button class="top-icon" type="button" id="helpBtn" aria-label="玩法说明">？</button>
+        <button class="top-icon" type="button" id="soundBtn" aria-label="关闭声音">🔊</button>
+    </header>
+
+    <main>
+        <!-- 首页 -->
+        <section class="view title-view" id="titleView">
+            <div class="title-main">
+                <svg class="hero-art" viewBox="0 0 360 220" aria-hidden="true">
+                    <defs>
+                        <clipPath id="heroClip"><path d="M14 34 Q180 26 346 34 Q352 34 352 40 V206 Q352 214 344 214 H16 Q8 214 8 206 V40 Q8 34 14 34 Z"/></clipPath>
+                    </defs>
+                    <g clip-path="url(#heroClip)">
+                        <path d="M0 40 C60 30 120 46 180 38 S300 30 360 40 V220 H0 Z" fill="var(--l2020)"/>
+                        <path d="M0 72 C70 80 130 64 200 72 S310 80 360 70 V220 H0 Z" fill="var(--l2010)"/>
+                        <path d="M0 104 C50 96 140 110 210 100 S320 96 360 104 V220 H0 Z" fill="var(--l2000)"/>
+                        <path d="M0 132 C80 140 150 126 220 134 S320 140 360 130 V220 H0 Z" fill="var(--l1990)"/>
+                        <path d="M0 164 C60 156 130 170 200 160 S310 156 360 166 V220 H0 Z" fill="var(--l1980)"/>
+                        <path d="M0 192 C70 200 150 186 220 194 S320 198 360 190 V220 H0 Z" fill="var(--l1970)"/>
+                        <g fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.5">
+                            <!-- 2020年代：无线耳机 -->
+                            <path d="M62 50a5 5 0 1 1 6 6v8"/><path d="M84 50a5 5 0 1 0-6 6v8"/>
+                            <!-- 2010年代：智能手机 -->
+                            <rect x="268" y="78" width="13" height="21" rx="2.5"/><path d="M272.5 81.5h4"/>
+                            <!-- 2000年代：按键手机 -->
+                            <rect x="96" y="104" width="12" height="11" rx="2"/><rect x="96" y="116" width="12" height="12" rx="2"/><path d="M99 120h6M99 123.5h6"/>
+                            <!-- 1990年代：掌机/小霸王手柄 -->
+                            <rect x="300" y="136" width="16" height="23" rx="2.5"/><rect x="303" y="139" width="10" height="7" rx="1"/><path d="M303.5 152h4M305.5 150v4"/><circle cx="312" cy="152" r="1"/>
+                            <!-- 1980年代：磁带 -->
+                            <rect x="52" y="166" width="31" height="19" rx="2.5"/><circle cx="61" cy="174" r="2.6"/><circle cx="74" cy="174" r="2.6"/><path d="M57 183l3-3h15l3 3"/>
+                            <!-- 1970年代：黑胶唱片 -->
+                            <circle cx="236" cy="206" r="9"/><circle cx="236" cy="206" r="2.4"/>
+                        </g>
+                        <g fill="var(--ink)" opacity="0.18">
+                            <circle cx="150" cy="58" r="2"/><circle cx="330" cy="60" r="1.6"/><circle cx="40" cy="92" r="1.8"/><circle cx="170" cy="88" r="1.4"/>
+                            <circle cx="250" cy="118" r="2"/><circle cx="30" cy="148" r="1.6"/><circle cx="130" cy="150" r="2.2"/><circle cx="120" cy="182" r="1.6"/>
+                            <circle cx="300" cy="180" r="2"/><circle cx="60" cy="204" r="2"/><circle cx="160" cy="208" r="1.5"/><circle cx="320" cy="206" r="1.6"/>
+                        </g>
+                    </g>
+                    <g class="lens">
+                        <circle cx="196" cy="120" r="27" fill="rgba(255,255,255,0.5)" stroke="var(--ink)" stroke-width="5"/>
+                        <path d="M215 140l22 22" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                        <text x="196" y="132" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, system-ui, sans-serif" font-weight="900" font-size="34" fill="var(--ink)">?</text>
+                    </g>
+                </svg>
+                <h2 class="hero-title"><span class="mark">我知道你几岁</span></h2>
+                <p class="hero-sub">从中国时代记忆里，一把猜穿你的真实年龄。</p>
+            </div>
+            <div class="title-side">
+                <p class="hero-facts">问到有把握为止 · 全程只在最后猜一次</p>
+                <button class="btn btn-go btn-wide" type="button" data-start>开始测试</button>
+                <p class="hero-note">没听过或不记得的，请老实选「不知道」——这样反而猜得更准</p>
+                <p class="count-line" id="countLine" hidden></p>
+                <p class="fine">※ 纯前端娱乐测试，不会上传你的任何个人隐私</p>
+            </div>
+        </section>
+
+        <!-- 答题页 -->
+        <section class="view quiz-view" id="quizView" hidden>
+            <div class="q-head">
+                <p class="q-num"><span>Q.</span><b id="qNum">1</b></p>
+                <div class="meter" id="meter">
+                    <span class="meter-label">把握度</span>
+                    <span class="meter-bar" aria-hidden="true"><i></i></span>
+                    <b class="meter-pct" id="meterPct">0%</b>
+                </div>
+            </div>
+            <div class="q-body">
+                <div class="q-card paper taped" id="qCard">
+                    <p class="q-kind"><span class="q-icon" id="qIcon" aria-hidden="true"></span><span id="qKind"></span></p>
+                    <h2 class="q-name" id="qName" aria-live="polite"></h2>
+                    <p class="q-desc" id="qDesc"></p>
+                    <p class="q-ask" id="qAsk"><span id="qAskT"></span></p>
+                </div>
+                <div class="answers" id="answers" role="group" aria-label="选择答案"></div>
+                <p class="q-hint">不确定的话，老实选「不知道」会猜得更准</p>
+            </div>
+        </section>
+
+        <!-- 揭晓页 -->
+        <section class="view reveal-view" id="revealView" hidden>
+            <div class="rv" id="rv">
+                <p class="rv-dots" aria-hidden="true"><i></i><i></i><i></i></p>
+                <p class="rv-line rv-ok">我知道了。</p>
+                <p class="rv-line rv-you">你今年</p>
+                <p class="rv-age" id="rvAge" role="status"></p>
+                <div class="rv-check" id="rvCheck">
+                    <p class="rv-q">猜对了吗？</p>
+                    <div class="rv-btns">
+                        <button class="btn btn-go" type="button" id="hitBtn">猜对了</button>
+                        <button class="btn" type="button" id="missBtn">不对</button>
+                    </div>
+                </div>
+                <form class="rv-input" id="ageForm" novalidate hidden>
+                    <label class="rv-q" for="ageInput">你其实几岁？</label>
+                    <p class="rv-note">看看把你猜年轻了还是猜老了</p>
+                    <div class="age-row" id="ageRow">
+                        <button class="btn age-step" type="button" data-d="-1" aria-label="减1岁">−</button>
+                        <input class="age-input" id="ageInput" type="number" inputmode="numeric" min="5" max="100" step="1" autocomplete="off">
+                        <button class="btn age-step" type="button" data-d="1" aria-label="加1岁">＋</button>
+                    </div>
+                    <button class="btn btn-go" type="submit">确定</button>
+                    <button class="link-btn" type="button" id="ageSkip">不告诉你</button>
+                </form>
+                <p class="rv-skip" id="rvSkip">点击屏幕跳过</p>
+            </div>
+        </section>
+
+        <!-- 结果报告页 -->
+        <section class="view result-view" id="resultView" hidden>
+            <article class="sheet paper taped" id="sheet">
+                <p class="res-head">年龄判定报告</p>
+                <p class="res-you">你今年</p>
+                <p class="res-age" id="resAge"></p>
+                <div id="resStamp"></div>
+                <p class="res-real" id="resReal"></p>
+                <p class="res-n" id="resN"></p>
+                <section class="res-sec">
+                    <h3 class="res-h"><span class="mark">记忆地层</span></h3>
+                    <div class="strata" id="strata"></div>
+                    <p class="strata-peak" id="strataPeak"></p>
+                </section>
+                <section class="res-sec">
+                    <h3 class="res-h"><span class="mark">关键一击</span></h3>
+                    <p class="res-key" id="resKey"></p>
+                    <p class="res-key-note">最能帮你锁定真实年龄的那一题</p>
+                </section>
+                <div class="res-foot">
+                    <p class="res-count" id="resStat" hidden></p>
+                </div>
+            </article>
+            <div class="actions">
+                <button class="btn btn-go" type="button" id="shareBtn">生成战绩卡片</button>
+                <button class="btn" type="button" data-start>再玩一次</button>
+            </div>
+            <details class="log paper" id="log">
+                <summary>查看答过的题目</summary>
+                <ol class="log-list" id="logList"></ol>
+            </details>
+        </section>
+    </main>
+
+    <!-- 玩法说明弹窗 -->
+    <div class="modal" id="helpModal" hidden>
+        <div class="modal-sheet help-sheet" role="dialog" aria-modal="true" aria-labelledby="helpTitle" tabindex="-1">
+            <button class="modal-x" type="button" data-close aria-label="关闭">×</button>
+            <h2 class="sheet-title" id="helpTitle">玩法说明</h2>
+            <ol class="help-list">
+                <li>系统会抛出中国各个年代的童年玩具、游戏、热播剧、金曲、校园经历和网络热梗，偶尔还会有小测验。</li>
+                <li>每次作答后，算法都会实时重算你最可能的年龄，并挑选信息量最大的下一题；如果你对某领域不熟，它会自动换其他方向追问。</li>
+                <li>没听过或不记得的，请老实选「不知道」——勉强蒙一个反而容易让它猜偏。</li>
+                <li>整个过程绝不提前剧透年龄，只会在把握度足够高时，在最后一把说出结论。正负 1 岁以内都算猜中。</li>
+            </ol>
+            <p class="help-note">※ 所有计算都在你的浏览器本地完成，不会向任何服务器发送数据。</p>
+            <button class="btn btn-go" type="button" data-close>知道了</button>
+        </div>
+    </div>
+
+    <!-- 分享卡片弹窗 -->
+    <div class="modal" id="shareModal" hidden>
+        <div class="modal-sheet sh-sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle" tabindex="-1">
+            <button class="modal-x" type="button" data-close aria-label="关闭">×</button>
+            <h2 class="sheet-title" id="shTitle">战绩卡片</h2>
+            <div class="sh-img" id="shImgBox">
+                <img id="shImg" alt="年龄测试战绩卡片" hidden>
+                <p class="sh-wait" id="shWait">正在绘制卡片…</p>
+            </div>
+            <button class="btn btn-go" type="button" id="shSaveBtn">保存图片</button>
+            <p class="sh-note" id="shNote">&nbsp;</p>
+            <div class="row2" id="shRow">
+                <button class="btn" type="button" id="shCopyImgBtn">复制图片</button>
+                <button class="btn" type="button" id="shCopyTxtBtn">复制战绩文案</button>
+            </div>
+            <button class="link-btn" type="button" data-close>关闭</button>
+        </div>
+    </div>
+
+    <script src="items.js"></script>
+    <script src="engine.js"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            const $ = (id) => document.getElementById(id);
+            const DATA = window.NenreiItems;
+            const E = window.NenreiEngine;
+            const REDUCED = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            const FINE = Boolean(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+            const COARSE = Boolean(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+            const CAN_COPY_IMG = Boolean(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem);
+
+            const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+            /* ---------- 顶部栏高度自适应 ---------- */
+            function placeUnderBar() {
+                const bar = $('gameBar');
+                if (!bar) return;
+                document.documentElement.style.setProperty('--bar-bottom', `${Math.max(0, Math.ceil(bar.getBoundingClientRect().bottom))}px`);
+            }
+            window.addEventListener('resize', placeUnderBar);
+            window.addEventListener('load', placeUnderBar);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeUnderBar).catch(() => {});
+            placeUnderBar();
+
+            /* ---------- 本地音效（Web Audio API） ---------- */
+            const SOUND_KEY = 'cn_age_sound_v1';
+            let soundOn = true;
+            try { soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; } catch (e) {}
+            let audioCtx = null;
+
+            function ensureAudio() {
+                if (!soundOn) return null;
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
+                        const p = audioCtx.resume();
+                        if (p && p.catch) p.catch(() => {});
+                    }
+                    return audioCtx;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function sfx(freq, dur = 0.06, type = 'triangle', vol = 0.09, delay = 0, slide = 1.25) {
+                const ctx = ensureAudio();
+                if (!ctx) return;
+                try {
+                    const t = ctx.currentTime + delay;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, t);
+                    if (slide && slide !== 1) osc.frequency.exponentialRampToValueAtTime(Math.max(20, freq * slide), t + dur);
+                    gain.gain.setValueAtTime(vol, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + dur + 0.02);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(t);
+                    osc.stop(t + dur + 0.03);
+                } catch (e) {}
+            }
+
+            function renderSoundBtn() {
+                const btn = $('soundBtn');
+                btn.textContent = soundOn ? '🔊' : '🔇';
+                const label = soundOn ? '关闭声音' : '开启声音';
+                btn.setAttribute('aria-label', label);
+                btn.title = label;
+            }
+            $('soundBtn').addEventListener('click', () => {
+                soundOn = !soundOn;
+                try { localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off'); } catch (e) {}
+                renderSoundBtn();
+                if (soundOn) sfx(660, 0.05, 'triangle', 0.08);
+            });
+            renderSoundBtn();
+
+            /* ---------- 弹窗管理 ---------- */
+            const modalStack = [];
+            function openModal(id) {
+                const m = $(id);
+                if (!m) return;
+                placeUnderBar();
+                if (!modalStack.includes(m)) modalStack.push(m);
+                m.hidden = false;
+                document.documentElement.classList.add('has-modal');
+                const sheet = m.querySelector('.modal-sheet');
+                if (sheet) setTimeout(() => sheet.focus({ preventScroll: true }), 20);
+            }
+            function closeModal(m) {
+                const el = typeof m === 'string' ? $(m) : m;
+                if (!el || el.hidden) return;
+                el.hidden = true;
+                const i = modalStack.indexOf(el);
+                if (i >= 0) modalStack.splice(i, 1);
+                document.documentElement.classList.toggle('has-modal', modalStack.length > 0);
+                el.dispatchEvent(new CustomEvent('modal-close'));
+            }
+            const anyModalOpen = () => modalStack.length > 0;
+
+            $('helpBtn').addEventListener('click', () => openModal('helpModal'));
+            document.querySelectorAll('.modal').forEach((m) => {
+                m.addEventListener('click', (e) => {
+                    if (e.target === m || e.target.closest('[data-close]')) closeModal(m);
+                });
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalStack.length) {
+                    e.preventDefault();
+                    closeModal(modalStack[modalStack.length - 1]);
+                }
+            });
+
+            /* ---------- 本地战绩统计 ---------- */
+            const LOCAL_STATS_KEY = 'cn_age_local_stats_v1';
+            function readLocalStats() {
+                try {
+                    const s = JSON.parse(localStorage.getItem(LOCAL_STATS_KEY) || 'null');
+                    if (s && typeof s === 'object') return { plays: Number(s.plays) || 0, checked: Number(s.checked) || 0, hits: Number(s.hits) || 0 };
+                } catch (e) {}
+                return { plays: 0, checked: 0, hits: 0 };
+            }
+            function saveLocalStats(s) {
+                try { localStorage.setItem(LOCAL_STATS_KEY, JSON.stringify(s)); } catch (e) {}
+            }
+            function renderCount() {
+                const s = readLocalStats();
+                const parts = [];
+                if (s.plays >= 1) parts.push(`<span>本机已挑战 ${s.plays} 次</span>`);
+                if (s.checked >= 1) parts.push(`<span>猜中率 ${Math.round((s.hits / s.checked) * 100)}%</span>`);
+                const html = parts.join('');
+                $('countLine').innerHTML = html;
+                $('countLine').hidden = !parts.length;
+                $('resStat').innerHTML = html;
+                $('resStat').hidden = !parts.length;
+            }
+            renderCount();
+
+            /* ---------- 题型标签与矢量图标 ---------- */
+            const KIND = {
+                play: '玩具·游戏',
+                watch: '剧集·动画',
+                hear: '歌曲·音乐',
+                eat: '零食·美食',
+                drink: '饮品',
+                use: '用品·软件',
+                say: '热梗·流行语',
+                wear: '穿搭·潮流',
+                do: '校园·热潮',
+                read: '书刊·漫画',
+                sport: '体育·赛事',
+                movie: '电影',
+                quiz: '记忆小测验',
+                pick: '日常记忆',
+            };
+
+            const ICON = {
+                play: '<path d="M7 8.5h10a4 4 0 0 1 4 4v1.8a2.6 2.6 0 0 1-4.6 1.6L15 14H9l-1.4 1.9A2.6 2.6 0 0 1 3 14.3v-1.8a4 4 0 0 1 4-4z"/><path d="M8 11v3M6.5 12.5h3"/><path d="M15.6 12h.01M17.6 13.4h.01"/>',
+                watch: '<rect x="3" y="7" width="18" height="12" rx="2"/><path d="M8.5 3 12 7l3.5-4"/><path d="M8 21.5h8"/>',
+                hear: '<path d="M9 18V5.5l11-2.2v12.5"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="15.8" r="2.5"/>',
+                eat: '<path d="M3 11.5h18a9 8 0 0 1-18 0z"/><path d="M9 21h6"/><path d="M8 8c0-1.5 1-1.5 1-3M12 8c0-1.5 1-1.5 1-3M16 8c0-1.5 1-1.5 1-3"/>',
+                drink: '<path d="M6 8h12l-1.6 12.2a1.6 1.6 0 0 1-1.6 1.3H9.2a1.6 1.6 0 0 1-1.6-1.3z"/><path d="M13 8l2-5h3"/><path d="M6.6 12.5h10.8"/>',
+                use: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M7 12h10M10.5 6h3"/><path d="M12 16.8h.01"/>',
+                say: '<path d="M4 4.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1h-9.5L5.5 20v-4H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/><path d="M8 10.3h.01M12 10.3h.01M16 10.3h.01"/>',
+                wear: '<path d="M8.5 3 3 6.2l2 4 2-1V21h10V9.2l2 1 2-4L15.5 3a3.5 3.5 0 0 1-7 0z"/>',
+                do: '<path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4M5.3 5.3l2.8 2.8M15.9 15.9l2.8 2.8M18.7 5.3l-2.8 2.8M8.1 15.9l-2.8 2.8"/>',
+                read: '<path d="M2.5 5.5c3.2-1.4 6.3-1.2 9.5.8 3.2-2 6.3-2.2 9.5-.8V19c-3.2-1.4-6.3-1.2-9.5.8-3.2-2-6.3-2.2-9.5-.8z"/><path d="M12 6.3v13.5"/>',
+                sport: '<circle cx="12" cy="12" r="9"/><path d="M6.2 5.2c1.9 1.9 2.9 4.2 2.9 6.8s-1 4.9-2.9 6.8M17.8 5.2c-1.9 1.9-2.9 4.2-2.9 6.8s1 4.9 2.9 6.8"/>',
+                movie: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M3 11h18M3.5 7l3-3.5M9.5 7l3-3.5M15.5 7l3-3.5"/>',
+                quiz: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.4a2.6 2.6 0 1 1 3.7 2.4c-.8.4-1.2 1-1.2 1.9"/><path d="M12 16.9h.01"/>',
+                pick: '<path d="M12 21.5V2.5"/><path d="M12 5h6.5l2.5 2.5L18.5 10H12"/><path d="M12 12.5H5.5L3 15l2.5 2.5H12"/>',
+            };
+            const iconSvg = (kind) => `<svg viewBox="0 0 24 24">${ICON[kind] || ICON.quiz}</svg>`;
+
+            /* ---------- 视图与定时器 ---------- */
+            const VIEWS = ['titleView', 'quizView', 'revealView', 'resultView'];
+            function showView(id) {
+                VIEWS.forEach((v) => { $(v).hidden = v !== id; });
+                document.body.classList.toggle('is-night', id === 'revealView');
+                window.scrollTo(0, 0);
+            }
+
+            const timers = new Set();
+            function later(ms, fn) {
+                const t = setTimeout(() => { timers.delete(t); fn(); }, ms);
+                timers.add(t);
+                return t;
+            }
+            function clearLater() {
+                timers.forEach((t) => clearTimeout(t));
+                timers.clear();
+            }
+
+            function nowYear() {
+                const d = new Date();
+                const y = d.getFullYear();
+                const a = new Date(y, 0, 1).getTime();
+                const b = new Date(y + 1, 0, 1).getTime();
+                return y + (d.getTime() - a) / (b - a);
+            }
+
+            /* ---------- 游戏主循环 ---------- */
+            let cachedModel = null;
+            let game = null;
+            let cur = null;
+            let opts = [];
+            let busy = false;
+            let result = null;
+            const picked = new Map();
+
+            const RECENT_KEY = 'cn_nenrei_recent_v1';
+            function loadRecent() {
+                try {
+                    const arr = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+                    return Array.isArray(arr) ? arr.slice(-45) : [];
+                } catch (e) { return []; }
+            }
+            function saveRecent(id) {
+                try {
+                    const arr = loadRecent().filter((x) => x !== id);
+                    arr.push(id);
+                    localStorage.setItem(RECENT_KEY, JSON.stringify(arr.slice(-45)));
+                } catch (e) {}
+            }
+
+            function start() {
+                clearLater();
+                closeModal('shareModal');
+                busy = true;
+                if (!cachedModel) {
+                    cachedModel = E.model({ items: DATA.ITEMS, region: 'cn', now: nowYear() });
+                }
+                game = E.create({ model: cachedModel, recent: loadRecent() });
+                result = null;
+                picked.clear();
+                showView('quizView');
+                setMeter(game.state().conf);
+                ask(true);
+            }
+
+            function optionsOf(it) {
+                if (it.t === 'know') {
+                    return (DATA.LABELS[it.k] || DATA.LABELS.play).map((label, r) => ({ label, r, lv: 3 - r, dunno: r === 3 }));
+                }
+                if (it.t === 'quiz') {
+                    const list = it.c.map((label, i) => ({ label, r: i === 0 ? 0 : 1 }));
+                    for (let i = list.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [list[i], list[j]] = [list[j], list[i]];
+                    }
+                    list.push({ label: DATA.QUIZ_DUNNO, r: 2, dunno: true });
+                    return list;
+                }
+                if (it.t === 'pick') {
+                    const list = it.o.map((o, r) => ({ label: o[0], r }));
+                    if (!it.prof && !it.home) {
+                        const tail = [];
+                        const core = [];
+                        for (const x of list) {
+                            if ((it.chg != null && x.r === it.chg) || (it.none != null && x.r === it.none)) tail.push(x);
+                            else core.push(x);
+                        }
+                        for (let i = core.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [core[i], core[j]] = [core[j], core[i]];
+                        }
+                        list.length = 0;
+                        list.push(...core, ...tail);
+                    }
+                    if (it.dk) list.push({ label: it.dk, r: it.o.length, dunno: true });
+                    return list;
+                }
+                return [];
+            }
+
+            const kindOf = (it) => (it.t === 'know' ? it.k : it.t);
+            const titleOf = (it) => (it.t === 'quiz' || it.t === 'pick' ? it.q : it.name);
+
+            function ask(first) {
+                const it = game.next();
+                if (!it) {
+                    finish();
+                    return;
+                }
+                cur = it;
+                opts = optionsOf(it);
+                const paint = () => {
+                    renderCard(it);
+                    renderAnswers(it, opts);
+                    $('qCard').classList.remove('is-out');
+                    $('answers').classList.remove('is-out');
+                    busy = false;
+                };
+                if (first || REDUCED) {
+                    paint();
+                    return;
+                }
+                $('qCard').classList.add('is-out');
+                $('answers').classList.add('is-out');
+                later(160, paint);
+            }
+
+            function renderCard(it) {
+                const kind = kindOf(it);
+                const card = $('qCard');
+                card.dataset.kind = kind;
+                $('qNum').textContent = String(game.state().n + 1);
+                $('qIcon').innerHTML = iconSvg(kind);
+                $('qKind').textContent = KIND[kind] || '';
+                const nameText = titleOf(it);
+                const nameEl = $('qName');
+                nameEl.textContent = nameText;
+                nameEl.classList.toggle('is-long', nameText.length > 15);
+                const desc = it.t === 'know' ? it.d || '' : '';
+                $('qDesc').textContent = desc;
+                $('qDesc').hidden = !desc;
+                const askText = it.t === 'know' ? DATA.VERBS[it.k] || '' : '';
+                $('qAskT').textContent = askText;
+                $('qAsk').hidden = !askText;
+            }
+
+            function renderAnswers(it, list) {
+                const box = $('answers');
+                box.classList.remove('is-locked', 'is-moved');
+                box.dataset.kind = it.t;
+                box.innerHTML = list.map((o, i) => {
+                    const lv = o.lv != null ? `<span class="ans-lv" data-lv="${o.lv}" aria-hidden="true"><i></i><i></i><i></i></span>` : '';
+                    return `<button class="ans${o.dunno ? ' is-dunno' : ''}" type="button" data-i="${i}">${lv}<span class="ans-t">${esc(o.label)}</span><span class="ans-key" aria-hidden="true">${i + 1}</span></button>`;
+                }).join('');
+            }
+
+            $('answers').addEventListener('pointermove', (e) => {
+                if (e.pointerType === 'mouse') $('answers').classList.add('is-moved');
+            });
+            $('answers').addEventListener('click', (e) => {
+                const b = e.target.closest && e.target.closest('.ans');
+                if (!b || busy || b.disabled) return;
+                choose(b, opts[Number(b.dataset.i)]);
+            });
+            document.addEventListener('keydown', (e) => {
+                if ($('quizView').hidden || busy || anyModalOpen() || e.ctrlKey || e.metaKey || e.altKey) return;
+                const n = Number(e.key);
+                if (!(n >= 1 && n <= opts.length)) return;
+                const b = $('answers').querySelector(`.ans[data-i="${n - 1}"]`);
+                if (b) {
+                    e.preventDefault();
+                    choose(b, opts[n - 1]);
+                }
+            });
+
+            function choose(btn, o) {
+                if (!o || busy) return;
+                busy = true;
+                const it = cur;
+                const box = $('answers');
+                box.querySelectorAll('.ans').forEach((b) => { b.disabled = true; });
+                box.classList.add('is-locked');
+                btn.classList.add('is-picked');
+                sfx(o.lv != null ? 440 + o.lv * 70 : 600, 0.05, 'triangle', 0.08);
+                picked.set(it.id, o.label);
+                saveRecent(it.id);
+                const st = game.answer(it, o.r);
+                setMeter(st.conf);
+                later(220, () => {
+                    if (st.done) finish();
+                    else ask(false);
+                });
+            }
+
+            function setMeter(conf) {
+                const p = Math.max(0, Math.min(100, Math.round((Number(conf) || 0) * 100)));
+                const m = $('meter');
+                m.style.setProperty('--p', `${p}%`);
+                $('meterPct').textContent = `${p}%`;
+                m.classList.toggle('is-hot', p >= 70);
+            }
+
+            /* ---------- 黑夜揭晓 ---------- */
+            let revealStep = 0;
+
+            function finish() {
+                clearLater();
+                busy = true;
+                const st = game.state();
+                result = { guess: st.guess, conf: st.conf, n: st.n, asked: game.asked, real: null, decided: false };
+                const ls = readLocalStats();
+                ls.plays += 1;
+                saveLocalStats(ls);
+                renderCount();
+                reveal();
+            }
+
+            function setStep(s) {
+                if (s <= revealStep) return;
+                revealStep = s;
+                const rv = $('rv');
+                for (let i = 1; i <= 4; i++) rv.classList.toggle(`s${i}`, s >= i);
+                if (s === 3) slam();
+                if (s === 4 && FINE) $('hitBtn').focus({ preventScroll: true });
+            }
+
+            function reveal() {
+                revealStep = 0;
+                const rv = $('rv');
+                rv.className = 'rv';
+                $('rvAge').textContent = `${result.guess}岁。`;
+                $('rvCheck').hidden = false;
+                $('ageForm').hidden = true;
+                $('hitBtn').disabled = false;
+                $('missBtn').disabled = false;
+                showView('revealView');
+                if (!REDUCED) [0, 320, 640, 1280, 1600].forEach((t) => later(t, () => sfx(1320, 0.025, 'square', 0.025)));
+                const k = REDUCED ? 0.3 : 1;
+                later(950 * k, () => setStep(1));
+                later(2000 * k, () => setStep(2));
+                later(3150 * k, () => setStep(3));
+                later(4050 * k, () => setStep(4));
+            }
+
+            function slam() {
+                sfx(70, 0.6, 'sawtooth', 0.15, 0, 0.6);
+                sfx(140, 0.32, 'square', 0.06, 0, 0.7);
+                sfx(1760, 0.05, 'triangle', 0.04, 0.03);
+                const v = $('revealView');
+                v.classList.remove('is-shake');
+                void v.offsetWidth;
+                v.classList.add('is-shake');
+                try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) {}
+            }
+
+            $('revealView').addEventListener('click', (e) => {
+                if (e.target.closest && e.target.closest('button, input, form, label')) return;
+                if (revealStep >= 3) return;
+                clearLater();
+                setStep(1);
+                setStep(2);
+                setStep(3);
+                later(600, () => setStep(4));
+            });
+
+            $('hitBtn').addEventListener('click', () => decide(result.guess));
+            $('missBtn').addEventListener('click', () => {
+                $('rvCheck').hidden = true;
+                $('ageForm').hidden = false;
+                $('ageInput').value = String(result.guess);
+                if (FINE) {
+                    $('ageInput').focus();
+                    $('ageInput').select();
+                }
+            });
+            document.querySelectorAll('[data-d]').forEach((b) => {
+                b.addEventListener('click', () => {
+                    const i = $('ageInput');
+                    const v = Math.max(5, Math.min(100, (parseInt(i.value, 10) || result.guess) + Number(b.dataset.d)));
+                    i.value = String(v);
+                    $('ageRow').classList.remove('is-bad');
+                    sfx(660 + (v % 5) * 40, 0.03, 'triangle', 0.05);
+                });
+            });
+            $('ageForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const v = Number(String($('ageInput').value).trim());
+                const row = $('ageRow');
+                if (!Number.isInteger(v) || v < 5 || v > 100) {
+                    row.classList.remove('is-bad');
+                    void row.offsetWidth;
+                    row.classList.add('is-bad');
+                    sfx(196, 0.12, 'square', 0.04);
+                    return;
+                }
+                decide(v);
+            });
+            $('ageSkip').addEventListener('click', () => decide(null));
+
+            function decide(real) {
+                if (!result || result.decided) return;
+                result.decided = true;
+                result.real = real;
+                $('hitBtn').disabled = true;
+                $('missBtn').disabled = true;
+                if (real != null) {
+                    const ls = readLocalStats();
+                    ls.checked += 1;
+                    if (Math.abs(real - result.guess) <= 1) ls.hits += 1;
+                    saveLocalStats(ls);
+                    renderCount();
+                }
+                showResult(true);
+            }
+
+            /* ---------- 结果报告与记忆地层 ---------- */
+            function verdictOf(r) {
+                if (r.real == null) return 'none';
+                const d = Math.abs(r.real - r.guess);
+                return d === 0 ? 'exact' : d === 1 ? 'near' : 'off';
+            }
+
+            function realLine(r, kind) {
+                if (kind === 'none') return '未核对真实年龄';
+                if (kind === 'exact') return `其实是 ${r.real} 岁，一岁不差！`;
+                if (kind === 'near') return `其实是 ${r.real} 岁（仅差 ${Math.abs(r.real - r.guess)} 岁）`;
+                return r.guess < r.real
+                    ? `其实是 ${r.real} 岁，被猜年轻了 ${r.real - r.guess} 岁`
+                    : `其实是 ${r.real} 岁，被猜老了 ${r.guess - r.real} 岁`;
+            }
+
+            function answerText(a) {
+                const it = a.item;
+                if (it.t === 'know') return (DATA.LABELS[it.k] || DATA.LABELS.play)[a.r];
+                if (it.t === 'quiz') return picked.get(it.id) || (a.r === 2 ? DATA.QUIZ_DUNNO : '');
+                if (it.t === 'pick') return a.r < it.o.length ? it.o[a.r][0] : it.dk;
+                return '';
+            }
+
+            const ERAS = [2020, 2010, 2000, 1990, 1980, 1970];
+            function strataOf(asked) {
+                const m = new Map(ERAS.map((e) => [e, { sum: 0, n: 0, names: [] }]));
+                asked.forEach((a) => {
+                    const it = a.item;
+                    if (it.t === 'pick' || !(it.y > 0)) return;
+                    const era = Math.max(1970, Math.min(2020, Math.floor(it.y / 10) * 10));
+                    let s = 0;
+                    if (it.t === 'know') s = [1, 0.67, 0.33, 0][a.r];
+                    else if (it.t === 'quiz') s = [1, 0.15, 0][a.r];
+                    const L = m.get(era);
+                    L.sum += s;
+                    L.n += 1;
+                    if (s >= 0.6 && it.name && it.t !== 'quiz') L.names.push(it.name);
+                });
+                return ERAS.map((e) => {
+                    const L = m.get(e);
+                    const v = L.n ? L.sum / L.n : 0;
+                    const fossils = L.names.slice(0, 2);
+                    return { era: e, n: L.n, v, fossils, none: L.n > 0 && !fossils.length && v < 0.15 };
+                });
+            }
+
+            const eraName = (e) => (e === ERAS[ERAS.length - 1] ? `${e}年代以前` : `${e}年代`);
+            function peakOf(layers) {
+                let best = null;
+                layers.forEach((L) => {
+                    if (L.n && L.v > 0.15 && (!best || L.v > best.v + 1e-9)) best = L;
+                });
+                return best;
+            }
+            function keyOf(asked) {
+                let best = null;
+                asked.forEach((a) => { if (!best || a.gain > best.gain) best = a; });
+                return best;
+            }
+
+            function showResult(fresh) {
+                const r = result;
+                const kind = verdictOf(r);
+                $('resAge').textContent = `${r.guess}岁。`;
+                const stamp = kind === 'exact' || kind === 'near' ? '<span class="stamp-t">猜中</span>' : '';
+                $('resStamp').innerHTML = stamp ? `<p class="stamp${fresh && !REDUCED ? ' is-pop' : ''}">${stamp}</p>` : '';
+                $('resReal').textContent = realLine(r, kind);
+                $('resN').textContent = `只用了 ${r.n} 题就锁定了答案`;
+
+                const layers = strataOf(r.asked);
+                $('strata').innerHTML = layers.map((L) => {
+                    const head = `<span class="st-era">${esc(eraName(L.era))}</span>`;
+                    if (!L.n) return `<div class="st-row is-empty" style="--c: var(--l${L.era})">${head}<span class="st-none">未探测</span></div>`;
+                    const names = L.fossils.length
+                        ? `<span class="st-names">${L.fossils.map((n) => `<span class="st-fossil">${esc(n)}</span>`).join('')}</span>`
+                        : L.none ? '<span class="st-none">暂无化石</span>' : '';
+                    return `<div class="st-row" style="--c: var(--l${L.era}); --v: ${Math.round(Math.max(0.04, L.v) * 100)}%"><i class="st-fill"></i>${head}${names}</div>`;
+                }).join('');
+
+                const st = $('strata');
+                st.classList.remove('is-grow');
+                if (fresh && !REDUCED) {
+                    void st.offsetWidth;
+                    st.classList.add('is-grow');
+                }
+                const peak = peakOf(layers);
+                $('strataPeak').textContent = peak ? `记忆最浓的时代地层：${eraName(peak.era)}` : '记忆地层几乎一片空白';
+
+                const key = keyOf(r.asked);
+                $('resKey').innerHTML = key
+                    ? `<span class="key-q">${esc(`“${titleOf(key.item)}”`)}</span><span aria-hidden="true">·</span><span class="key-a">${esc(answerText(key))}</span>`
+                    : '';
+
+                renderCount();
+                $('logList').innerHTML = r.asked.map((a, i) => `<li><span class="log-n">${i + 1}</span><span class="log-q">${esc(titleOf(a.item))}</span><span class="log-a">${esc(answerText(a))}</span></li>`).join('');
+                $('log').open = false;
+                showView('resultView');
+
+                if (fresh) {
+                    if (kind === 'exact' || kind === 'near') {
+                        [523, 659, 784, 1046].forEach((f, i) => sfx(f, 0.12, 'triangle', 0.08, i * 0.09));
+                    } else if (kind === 'off') {
+                        [392, 330, 262].forEach((f, i) => sfx(f, 0.14, 'triangle', 0.07, i * 0.11));
+                    }
+                }
+            }
+
+            /* ---------- 战绩卡片生成（1080×1350 PNG） ---------- */
+            const SH = { blob: null, name: '', text: '', token: 0 };
+
+            function shareText() {
+                const r = result;
+                const kind = verdictOf(r);
+                const lines = ['【我知道你几岁 · 中国记忆版】', `系统一口咬定：“你今年 ${r.guess} 岁。”`];
+                if (kind === 'exact') lines.push(`只用了 ${r.n} 题就被一岁不差猜穿了！`);
+                else if (kind === 'near') lines.push(`其实是 ${r.real} 岁，只差 1 岁差点被看穿！`);
+                else if (kind === 'off') {
+                    lines.push(r.guess < r.real
+                        ? `其实是 ${r.real} 岁，心态年轻了 ${r.real - r.guess} 岁！`
+                        : `其实是 ${r.real} 岁，灵魂沧桑了 ${r.guess - r.real} 岁！`);
+                } else {
+                    lines.push('至于猜得准不准，这是个秘密。');
+                }
+                const key = keyOf(r.asked);
+                if (key) lines.push(`暴露年龄的关键一题：“${titleOf(key.item)}”`);
+                return lines.join('\n');
+            }
+
+            function shareNote(text, ok) {
+                const n = $('shNote');
+                n.textContent = text || '\u00A0';
+                n.classList.toggle('is-ok', Boolean(ok));
+            }
+
+            function saveBlob(blob, name) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = name;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+            }
+
+            const C = {
+                ink: '#221D19', soft: '#625A52', bg: '#EEE7DA', stamp: '#C8423A', marker: '#FFE45C', tape: 'rgba(232, 214, 168, 0.95)',
+                era: { 1970: '#C9A27E', 1980: '#E58A6B', 1990: '#F2C14E', 2000: '#8CC49B', 2010: '#6FA8DC', 2020: '#A68BD9' },
+            };
+            const FD = '"PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif';
+            const FR = '"PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif';
+
+            function rrect(g, x, y, w, h, r) {
+                g.beginPath();
+                g.moveTo(x + r, y);
+                g.arcTo(x + w, y, x + w, y + h, r);
+                g.arcTo(x + w, y + h, x, y + h, r);
+                g.arcTo(x, y + h, x, y, r);
+                g.arcTo(x, y, x + w, y, r);
+                g.closePath();
+            }
+
+            function fitFill(g, text, x, y, maxW, size, family, weight, minSize) {
+                let s = size;
+                g.font = `${weight} ${s}px ${family}`;
+                while (s > (minSize || 14) && g.measureText(text).width > maxW) {
+                    s -= 2;
+                    g.font = `${weight} ${s}px ${family}`;
+                }
+                g.fillText(text, x, y);
+                return s;
+            }
+
+            async function makeCard() {
+                const r = result;
+                const W = 1080;
+                const H = 1350;
+                const cv = document.createElement('canvas');
+                cv.width = W;
+                cv.height = H;
+                const g = cv.getContext('2d');
+
+                const kind = verdictOf(r);
+                g.fillStyle = C.bg;
+                g.fillRect(0, 0, W, H);
+                g.textBaseline = 'alphabetic';
+
+                // 顶部标题
+                g.fillStyle = C.ink;
+                g.textAlign = 'left';
+                fitFill(g, '我知道你几岁', 64, 100, 520, 56, FD, 400, 32);
+                g.textAlign = 'right';
+                g.font = `700 28px ${FR}`;
+                g.fillStyle = C.soft;
+                g.fillText('中国时代记忆版', W - 64, 96);
+
+                // 中央纸片
+                g.save();
+                g.shadowColor = 'rgba(60, 40, 20, 0.22)';
+                g.shadowBlur = 30;
+                g.shadowOffsetY = 12;
+                rrect(g, 56, 140, W - 112, 560, 34);
+                g.fillStyle = '#FFFFFF';
+                g.fill();
+                g.restore();
+
+                // 纸胶带
+                g.save();
+                g.translate(W / 2, 140);
+                g.rotate(-0.04);
+                g.fillStyle = C.tape;
+                g.fillRect(-90, -20, 180, 40);
+                g.restore();
+
+                g.textAlign = 'center';
+                g.fillStyle = C.ink;
+                fitFill(g, '你今年', W / 2, 246, 860, 54, FR, 900, 30);
+                fitFill(g, `${r.guess}岁。`, W / 2, 426, 900, 196, FD, 400, 72);
+                g.fillStyle = C.stamp;
+                rrect(g, W / 2 - 280, 456, 560, 12, 6);
+                g.fill();
+
+                const hit = kind === 'exact' || kind === 'near';
+                if (hit) {
+                    const label = '猜中';
+                    g.font = `400 76px ${FD}`;
+                    const tw = Math.min(760, g.measureText(label).width);
+                    const bw = tw + 88;
+                    const bh = 104;
+                    const cy = 550;
+                    g.save();
+                    g.translate(W / 2, cy);
+                    g.rotate(-0.06);
+                    g.strokeStyle = C.stamp;
+                    g.lineWidth = 8;
+                    rrect(g, -bw / 2, -bh / 2, bw, bh, 22);
+                    g.stroke();
+                    g.restore();
+                    g.fillStyle = C.stamp;
+                    fitFill(g, label, W / 2, cy + 28, 760, 76, FD, 400, 30);
+                }
+
+                g.fillStyle = hit ? C.soft : C.ink;
+                if (hit) fitFill(g, realLine(r, kind), W / 2, 664, 900, 36, FR, 900, 20);
+                else fitFill(g, realLine(r, kind), W / 2, 578, 900, kind === 'none' ? 36 : 44, FR, 900, 20);
+
+                // 记忆地层
+                g.textAlign = 'left';
+                g.font = `400 46px ${FD}`;
+                const head = '记忆地层';
+                const hw = Math.min(600, g.measureText(head).width);
+                g.fillStyle = C.marker;
+                rrect(g, 60, 750, hw + 28, 30, 10);
+                g.fill();
+                g.fillStyle = C.ink;
+                fitFill(g, head, 74, 776, 600, 46, FD, 400, 26);
+
+                const layers = strataOf(r.asked);
+                const top = 806;
+                const rowH = 60;
+                const x0 = 64;
+                const x1 = W - 64;
+                g.save();
+                rrect(g, x0, top, x1 - x0, rowH * layers.length, 22);
+                g.clip();
+                layers.forEach((L, i) => {
+                    const y = top + i * rowH;
+                    const col = C.era[L.era];
+                    g.fillStyle = col;
+                    g.globalAlpha = L.n ? 0.26 : 0.14;
+                    g.fillRect(x0, y, x1 - x0, rowH);
+                    g.globalAlpha = 1;
+                    if (!L.n) {
+                        g.save();
+                        g.beginPath();
+                        g.rect(x0, y, x1 - x0, rowH);
+                        g.clip();
+                        g.strokeStyle = 'rgba(34, 29, 25, 0.08)';
+                        g.lineWidth = 6;
+                        for (let sx = x0 - rowH; sx < x1 + rowH; sx += 16) {
+                            g.beginPath();
+                            g.moveTo(sx, y + rowH);
+                            g.lineTo(sx + rowH, y);
+                            g.stroke();
+                        }
+                        g.restore();
+                    } else {
+                        const w = Math.max(0.04, L.v) * (x1 - x0);
+                        g.fillStyle = col;
+                        rrect(g, x0 - 30, y + 4, w + 30, rowH - 8, 18);
+                        g.fill();
+                    }
+                    g.fillStyle = C.ink;
+                    g.textAlign = 'left';
+                    fitFill(g, eraName(L.era), x0 + 22, y + 41, 250, 32, FD, 400, 18);
+                    g.textAlign = 'right';
+                    if (!L.n) {
+                        g.fillStyle = C.soft;
+                        fitFill(g, '未探测', x1 - 22, y + 40, 300, 24, FR, 700, 16);
+                    } else if (!L.fossils.length) {
+                        if (L.none) {
+                            g.fillStyle = C.soft;
+                            fitFill(g, '暂无化石', x1 - 22, y + 40, 300, 24, FR, 700, 16);
+                        }
+                    } else {
+                        let rx = x1 - 22;
+                        const room = (x1 - x0) - 290;
+                        L.fossils.forEach((name, k) => {
+                            const maxW = k === 0 ? room * 0.62 : room * 0.38;
+                            g.font = `700 24px ${FR}`;
+                            let s = 24;
+                            while (s > 16 && g.measureText(name).width > maxW - 24) {
+                                s -= 2;
+                                g.font = `700 ${s}px ${FR}`;
+                            }
+                            const tw = g.measureText(name).width;
+                            if (tw > maxW - 24 || rx - tw - 24 < x0 + 270) return;
+                            g.fillStyle = 'rgba(255, 255, 255, 0.88)';
+                            rrect(g, rx - tw - 24, y + 14, tw + 24, rowH - 28, 10);
+                            g.fill();
+                            g.fillStyle = C.ink;
+                            g.fillText(name, rx - 12, y + 40);
+                            rx -= tw + 36;
+                        });
+                    }
+                });
+                g.restore();
+
+                // 关键一击
+                const key = keyOf(r.asked);
+                g.textAlign = 'left';
+                if (key) {
+                    g.fillStyle = C.soft;
+                    fitFill(g, '关键一击', 64, 1232, 260, 28, FR, 900, 18);
+                    g.font = `900 28px ${FR}`;
+                    const lw = g.measureText('关键一击').width;
+                    g.fillStyle = C.ink;
+                    fitFill(g, `“${titleOf(key.item)}” · ${answerText(key)}`, 64 + lw + 18, 1232, W - 128 - lw - 18, 30, FR, 900, 18);
+                }
+
+                // 底部
+                g.fillStyle = C.soft;
+                g.textAlign = 'left';
+                fitFill(g, `只用了 ${r.n} 题锁定答案`, 64, 1302, 560, 26, FR, 700, 16);
+                g.textAlign = 'right';
+                g.font = `400 30px ${FD}`;
+                g.fillStyle = C.ink;
+                g.fillText('中国时代记忆猜年龄', W - 64, 1302);
+
+                return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'));
+            }
+
+            async function openShare() {
+                if (!result) return;
+                const token = ++SH.token;
+                SH.blob = null;
+                const img = $('shImg');
+                img.hidden = true;
+                img.removeAttribute('src');
+                $('shWait').hidden = false;
+                $('shWait').textContent = '正在绘制卡片…';
+                $('shSaveBtn').disabled = true;
+                $('shCopyImgBtn').disabled = true;
+                $('shCopyTxtBtn').disabled = true;
+                shareNote('');
+                openModal('shareModal');
+                try {
+                    const blob = await makeCard();
+                    if (token !== SH.token) return;
+                    if (!blob) throw new Error('no image');
+                    SH.blob = blob;
+                    SH.name = `guess-age-${result.guess}.png`;
+                    SH.text = shareText();
+                    const url = await new Promise((resolve) => {
+                        const fr = new FileReader();
+                        fr.onload = () => resolve(String(fr.result || ''));
+                        fr.onerror = () => resolve('');
+                        fr.readAsDataURL(blob);
+                    });
+                    if (token !== SH.token) return;
+                    if (url) {
+                        img.src = url;
+                        img.hidden = false;
+                        $('shWait').hidden = true;
+                    }
+                    $('shSaveBtn').disabled = false;
+                    $('shCopyTxtBtn').disabled = false;
+                    const showCopyImg = !COARSE && CAN_COPY_IMG;
+                    $('shCopyImgBtn').hidden = !showCopyImg;
+                    $('shCopyImgBtn').disabled = !showCopyImg;
+                    $('shRow').classList.toggle('one', !showCopyImg);
+                    shareNote(COARSE ? '长按图片或点击按钮即可保存发朋友圈' : '可直接保存图片，或复制到微信/聊天框分享');
+                } catch (e) {
+                    if (token !== SH.token) return;
+                    $('shWait').hidden = false;
+                    $('shWait').textContent = '图片生成失败，请重新打开试试';
+                }
+            }
+
+            $('shareBtn').addEventListener('click', () => openShare());
+            $('shSaveBtn').addEventListener('click', () => {
+                if (!SH.blob) return;
+                saveBlob(SH.blob, SH.name);
+                shareNote('图片已保存到本地', true);
+            });
+            $('shCopyImgBtn').addEventListener('click', () => {
+                if (!SH.blob || !CAN_COPY_IMG) return;
+                navigator.clipboard.write([new window.ClipboardItem({ 'image/png': SH.blob })]).then(() => {
+                    shareNote('已复制图片，可直接粘贴发送', true);
+                }).catch(() => {
+                    shareNote('浏览器限制无法复制图片，请直接点「保存图片」');
+                });
+            });
+            $('shCopyTxtBtn').addEventListener('click', () => {
+                if (!SH.text) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(SH.text).then(() => {
+                        shareNote('已复制战绩文案，快去发朋友圈吧', true);
+                    }).catch(() => shareNote('复制失败，请手动截图分享'));
+                } else {
+                    shareNote('当前环境不支持一键复制文案');
+                }
+            });
+            $('shareModal').addEventListener('modal-close', () => {
+                SH.token++;
+                SH.blob = null;
+                $('shImg').removeAttribute('src');
+            });
+
+            document.querySelectorAll('[data-start]').forEach((b) => b.addEventListener('click', () => start()));
+        })();
+    </script>
+</body>
+</html>
